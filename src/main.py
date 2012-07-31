@@ -8,7 +8,7 @@ try:
     import imaplib
     pygtk.require('2.0')
 except:
-    print("Error: %s" % "need python-notify, python-gtk2 and gtk")
+    print("Error: %s" % "need python-notify, imaplib, python-gtk2 and gtk")
     sys.exit(1)
 
 
@@ -18,8 +18,8 @@ class BankAccountEmail():
     
     """
     hostname = "imap.gmail.com"
-    username = "junior@pavelstudenik.cz"
-    password = "pass" # only for example
+    username = "<email>" 
+    password = "<pass>"
 
     def __init__(self):
         self.conn = imaplib.IMAP4_SSL(self.hostname)
@@ -28,9 +28,18 @@ class BankAccountEmail():
     def getList(self):
         print self.conn
         typ, data = self.conn.list()
+
         print typ
         for it in data:
             print it 
+
+        self.conn.select("inbox")
+        result, data = self.conn.uid('search', None, "ALL")
+        for email_uid in data[0].split()[-2:]: # only last second emails
+            print email_uid
+            result, data = self.conn.uid('fetch', int(email_uid), '(RFC822)')
+            print result, data
+
 
     def getActual(self):
         self.getList()
