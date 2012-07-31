@@ -11,13 +11,13 @@ except:
     sys.exit(1)
 
 
-def show_notify(str_ntf):
+def show_notify(ntf_title, ntf_str):
     pynotify.init("Bank account notification")
-    n = pynotify.Notification("Aktuální zůstatek", "%d Kč" % str_ntf)
+    n = pynotify.Notification(ntf_title, ntf_str)
     # n.set_urgency(pynotify.URGENCY_CRITICAL)
     # n.set_category("device")
     n.set_timeout(10000)
     n.show()
 
 if __name__ == "__main__":
-    show_notify(1000)
+    show_notify("Aktuální zůstatek", "1000 Kč")
