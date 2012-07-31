@@ -14,6 +14,8 @@ except:
 def show_notify(str_ntf):
     pynotify.init("Bank account notification")
     n = pynotify.Notification("Aktuální zůstatek", "%d Kč" % str_ntf)
+    # n.set_urgency(pynotify.URGENCY_CRITICAL)
+    # n.set_category("device")
     n.set_timeout(10000)
     n.show()
 
