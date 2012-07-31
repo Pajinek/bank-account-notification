@@ -10,14 +10,31 @@ except:
     print("Error: %s" % "need python-notify, python-gtk2 and gtk")
     sys.exit(1)
 
+class Parser():
+    """
+    Class for parsing data from emails.
+    
+    """
+    pass
 
-def show_notify(ntf_title, ntf_str):
-    pynotify.init("Bank account notification")
-    n = pynotify.Notification(ntf_title, ntf_str)
-    # n.set_urgency(pynotify.URGENCY_CRITICAL)
-    # n.set_category("device")
-    n.set_timeout(10000)
-    n.show()
+class Notifier():
+    """
+    Class for handling with notifications.
+    
+    """
+    
+    def __init__(self):
+        pynotify.init("Bank account notification")
+        self.show_notify("My account", "Malo")
+        
+    def show_notify(self, ntf_title, ntf_str):
+        
+        n = pynotify.Notification(ntf_title, ntf_str)
+        # n.set_urgency(pynotify.URGENCY_CRITICAL)
+        # n.set_category("device")
+        n.set_timeout(10000)
+        n.show()
 
 if __name__ == "__main__":
-    show_notify("Aktuální zůstatek", "1000 Kč")
+
+    n = Notifier()
