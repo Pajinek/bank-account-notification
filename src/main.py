@@ -5,6 +5,7 @@ try:
     import gtk, pygtk, os
     import sys
     import pynotify
+    import imaplib
     pygtk.require('2.0')
 except:
     print("Error: %s" % "need python-notify, python-gtk2 and gtk")
@@ -16,8 +17,23 @@ class BankAccountEmail():
     Class for parsing data from emails.
     
     """
+    hostname = "imap.gmail.com"
+    username = "junior@pavelstudenik.cz"
+    password = "pass" # only for example
+
+    def __init__(self):
+        self.conn = imaplib.IMAP4_SSL(self.hostname)
+        self.conn.login(self.username, self.password) 
+        
+    def getList(self):
+        print self.conn
+        typ, data = self.conn.list()
+        print typ
+        for it in data:
+            print it 
 
     def getActual(self):
+        self.getList()
         return -10**5
 
 
