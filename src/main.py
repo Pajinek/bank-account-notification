@@ -19,7 +19,7 @@ class BankAccountEmail():
     """
     hostname = "imap.gmail.com"
     username = "junior@pavelstudenik.cz"
-    password = "pass" # only for example
+    password = "pavel1987"
 
     def __init__(self):
         self.conn = imaplib.IMAP4_SSL(self.hostname)
