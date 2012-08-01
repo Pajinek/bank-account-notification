@@ -12,6 +12,7 @@ try:
     import pynotify
     import imaplib
     import ConfigParser
+    import sqlite3
     pygtk.require('2.0')
 except:
     print("Error: %s" % "need python-notify, imaplib, python-gtk2 and gtk")
@@ -32,8 +33,24 @@ class Config():
         return self.config.get('Info','username')
     
     def get_password(self):
-        return self.config.get('Info','password')   
-
+        return self.config.get('Info','password')
+    
+    
+class DatabaseResources():
+    """
+    Class for handling with database.
+    For more info http://docs.python.org/library/sqlite3.html
+    
+    """
+    
+    def __init__(self):
+        self.conn = sqlite3.connect('KB.db')
+        self.c = conn.cursor()
+    
+    """
+    def somefce(self):
+        c.execute("SQL COMMAND")
+    """
 
 class BankAccountEmail():
     """
