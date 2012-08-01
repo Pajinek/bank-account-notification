@@ -40,9 +40,6 @@ class BankAccountEmail():
     Class for parsing data from emails.
     
     """
-    hostname = "imap.gmail.com"
-    username = "horak@styrax.info" 
-    password = "7cx34ymbwn"
 
     def __init__(self):
         conf = Config()
