@@ -1,15 +1,37 @@
 #/bin/env python
 # coding: utf-8
 
+__author__ = 'Martin Horak, Pavel Studenik'
+__version__ = 0.1
+
 try: 
-    import gtk, pygtk, os
+    import gtk
+    import pygtk
+    import os
     import sys
     import pynotify
     import imaplib
+    import ConfigParser
     pygtk.require('2.0')
 except:
     print("Error: %s" % "need python-notify, imaplib, python-gtk2 and gtk")
     sys.exit(1)
+
+    
+class Config():
+    
+    def __init__(self):
+        self.config = ConfigParser.ConfigParser()
+        self.config.read('ban.conf') # change to /etc after write install script
+        
+    def get_hostname(self):
+        return self.config.get('Info','hostname')
+
+    def get_username(self):
+        return self.config.get('Info','username')
+    
+    def get_password(self):
+        return self.config.get('Info','password')   
 
 
 class BankAccountEmail():
@@ -18,12 +40,13 @@ class BankAccountEmail():
     
     """
     hostname = "imap.gmail.com"
-    username = "<email>" 
-    password = "<pass>"
+    username = "horak@styrax.info" 
+    password = "7cx34ymbwn"
 
     def __init__(self):
-        self.conn = imaplib.IMAP4_SSL(self.hostname)
-        self.conn.login(self.username, self.password) 
+        conf = Config()
+        self.conn = imaplib.IMAP4_SSL(conf.get_hostname())
+        self.conn.login(conf.get_username(), conf.get_password()) 
         
     def getList(self):
         print self.conn
@@ -54,10 +77,13 @@ class NotifierUnity():
     
     def __init__(self):
         pynotify.init("Bank account notification")
+        pic_file = 'kb_logo.svg'
+        self.pic = os.path.abspath('..') + '/data/' + pic_file
         
     def show(self, ntf_title, ntf_str):
         
-        n = pynotify.Notification(ntf_title, ntf_str)
+        print self.pic
+        n = pynotify.Notification(ntf_title, ntf_str, self.pic)
         # n.set_urgency(pynotify.URGENCY_CRITICAL)
         # n.set_category("device")
         n.set_timeout(10000)
