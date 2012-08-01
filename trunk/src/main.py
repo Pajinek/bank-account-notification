@@ -22,7 +22,8 @@ class Config():
     
     def __init__(self):
         self.config = ConfigParser.ConfigParser()
-        self.config.read('ban.conf') # change to /etc after write install script
+        self.config.read(os.path.realpath('src/ban.conf'))
+         # change to /etc after write install script
         
     def get_hostname(self):
         return self.config.get('Info','hostname')
