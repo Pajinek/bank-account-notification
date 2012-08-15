@@ -18,13 +18,31 @@ except:
     print("Error: %s" % "need python-notify, imaplib, python-gtk2 and gtk")
     sys.exit(1)
 
+str_file_config = """
+# ban.conf
+
+[Info]
+hostname=<hostname>
+username=<username>
+password=<password>
+"""
     
 class Config():
     
     def __init__(self):
+        # change to /etc after write install script
+        fileconfig = 'src/ban2.conf'
         self.config = ConfigParser.ConfigParser()
-        self.config.read(os.path.realpath('src/ban.conf'))
-         # change to /etc after write install script
+        if os.path.exists(fileconfig):
+            self.config.read(os.path.realpath(fileconfig))
+        else:
+            f=open(fileconfig,'w')
+            print("DEBUG: File %s doesn't exist")
+            f.write(str_file_config)
+            f.close()
+            print("DEBUG: File %s create. Yum must set up value for email.")
+            sys.exit(0)
+            # write 
         
     def get_hostname(self):
         return self.config.get('Info','hostname')
