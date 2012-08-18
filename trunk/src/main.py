@@ -2,7 +2,7 @@
 # coding: utf-8
 
 __author__ = 'Martin Horak, Pavel Studenik'
-__version__ = 0.1
+__version__ = 0.2
 
 try: 
     import gtk
@@ -26,31 +26,34 @@ str_file_config =  \
 """# ban.conf
 
 [Info]
-hostname=<hostname>
-username=<username>
-password=<password>
-mark=<mark>
+hostname=%s
+username=%s
+password=%s
+mark=%s
 """
     
 class Config():
     
     def __init__(self):
         # change to /etc after write install script
-        fileconfig = 'src/ban.conf'
+        fileconfig = 'settings.conf'
         self.config = ConfigParser.ConfigParser()
         if os.path.exists(fileconfig):
             self.config.read(os.path.realpath(fileconfig))
         else:
             f=open(fileconfig,'w')
             print("DEBUG: File %s doesn't exist" % fileconfig)
-
-            password = getpass.getpass("Enter your password: ")
-            #str_file_config = str_file_config % (hostname, password, )
-
-            f.write(str_file_config)
-            f.close()
             print("DEBUG: File %s create. Yum must set up value for email." % fileconfig)
-            sys.exit(0)
+
+            hostname = raw_input("Enter your hostname: ")
+            username = raw_input("Enter your username: ")
+            password = getpass.getpass("Enter your password: ")
+            mark = raw_input("Select mark (inbox): ")
+            str_file_config_output = (str_file_config) % (hostname, username, password, mark)
+            f.write(str_file_config_output)
+            f.close()
+            # read config file
+            self.config.read(os.path.realpath(fileconfig))
         
     def get_hostname(self):
         return self.config.get('Info','hostname')
@@ -173,10 +176,12 @@ if __name__ == "__main__":
     b_account = BankAccountEmail()
     u_notify = NotifierUnity()
 
+    # print all data for archive action with bank's account
     if ptlist != [] and "--only-parse" in ptlist[0]:
         __run__=False
         b_account.getAll(debug=True)
 
+    # show data in gnome notify
     while(__run__):
         d = b_account.getActual()
         if d:
