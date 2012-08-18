@@ -157,11 +157,13 @@ class NotifierUnity():
     def __init__(self):
         pynotify.init("Bank account notification")
         pic_file = 'kb_logo.svg'
-        self.pic = os.path.abspath('..') + '/data/' + pic_file
+        self.pic = 'data/' + pic_file
         
     def show(self, ntf_title, ntf_str):
-        
-        print self.pic
+
+        if not os.path.exists(self.pic):
+            print "DEBUG: image %s doesn't exists" % self.pic
+
         n = pynotify.Notification(ntf_title, ntf_str, self.pic)
         # n.set_urgency(pynotify.URGENCY_CRITICAL)
         # n.set_category("device")
