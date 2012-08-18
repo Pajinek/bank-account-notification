@@ -13,36 +13,44 @@ try:
     import imaplib
     import ConfigParser
     import sqlite3
+    import email
+    import re
+    import getopt
+    import getpass
     pygtk.require('2.0')
 except:
     print("Error: %s" % "need python-notify, imaplib, python-gtk2 and gtk")
     sys.exit(1)
 
-str_file_config = """
-# ban.conf
+str_file_config =  \
+"""# ban.conf
 
 [Info]
 hostname=<hostname>
 username=<username>
 password=<password>
+mark=<mark>
 """
     
 class Config():
     
     def __init__(self):
         # change to /etc after write install script
-        fileconfig = 'src/ban2.conf'
+        fileconfig = 'src/ban.conf'
         self.config = ConfigParser.ConfigParser()
         if os.path.exists(fileconfig):
             self.config.read(os.path.realpath(fileconfig))
         else:
             f=open(fileconfig,'w')
-            print("DEBUG: File %s doesn't exist")
+            print("DEBUG: File %s doesn't exist" % fileconfig)
+
+            password = getpass.getpass("Enter your password: ")
+            #str_file_config = str_file_config % (hostname, password, )
+
             f.write(str_file_config)
             f.close()
-            print("DEBUG: File %s create. Yum must set up value for email.")
+            print("DEBUG: File %s create. Yum must set up value for email." % fileconfig)
             sys.exit(0)
-            # write 
         
     def get_hostname(self):
         return self.config.get('Info','hostname')
@@ -53,6 +61,8 @@ class Config():
     def get_password(self):
         return self.config.get('Info','password')
     
+    def get_mark(self):
+        return self.config.get('Info','mark')
     
 class DatabaseResources():
     """
@@ -80,6 +90,7 @@ class BankAccountEmail():
         conf = Config()
         self.conn = imaplib.IMAP4_SSL(conf.get_hostname())
         self.conn.login(conf.get_username(), conf.get_password()) 
+        self.mark = conf.get_mark()
         
     def getList(self):
         print self.conn
@@ -88,18 +99,50 @@ class BankAccountEmail():
         print typ
         for it in data:
             print it 
+        #TODO check if mark exists
 
-        self.conn.select("inbox")
-        result, data = self.conn.uid('search', None, "ALL")
-        for email_uid in data[0].split()[-2:]: # only last second emails
-            print email_uid
-            result, data = self.conn.uid('fetch', int(email_uid), '(RFC822)')
-            print result, data
+    def getParseEmail(self, raw_data):
+        def parse(raw_data):
+            msg = raw_data.split("\n")[0]
+            print msg
+            m = re.search(" ([0-9, ]*) CZK", msg)
+            value = m.group(1).replace(",",".").replace(" ","")
+            return {"message": msg, "value": float(value) }
 
+        email_message = email.message_from_string(raw_data[0][1])
+        maintype = email_message.get_content_maintype()
+        if maintype == 'multipart':
+            for part in email_message.get_payload():
+                if part.get_content_maintype() == 'text':
+                    return parse(part.get_payload(decode=True))
+        elif maintype == 'text':
+            return parse(email_message_instance.get_payload())
 
     def getActual(self):
         self.getList()
-        return -10**5
+
+        self.conn.select(self.mark)
+        #result, data = self.conn.uid('search', None, "ALL")
+        result, data = self.conn.uid('search', None, "UNSEEN")
+        for email_uid in data[0].split()[-1:]: # only last second emails
+            result, raw_email = self.conn.uid('fetch', int(email_uid), '(RFC822)')
+            return self.getParseEmail(raw_email)
+
+    def getAll(self, debug=False):
+        self.getList()
+        msg_list = []
+        self.conn.select(self.mark)
+        result, data = self.conn.uid('search', None, '(HEADER from "info@kb.cz")')
+        for email_uid in data[0].split():
+            result, raw_email = self.conn.uid('fetch', int(email_uid), '(RFC822)')
+            try:
+                msg_list += self.getParseEmail(raw_email)
+                if debug:
+                    print self.getParseEmail(raw_email)
+            except:
+                print "ERROR: %s" % raw_email
+
+        return msg_list
 
 
 class NotifierUnity():
@@ -124,13 +167,22 @@ class NotifierUnity():
 
 if __name__ == "__main__":
 
+    ptlist, args = getopt.getopt(sys.argv[1:], 'd', ["only-parse",])
+
     __run__ = True
     b_account = BankAccountEmail()
     u_notify = NotifierUnity()
 
+    if ptlist != [] and "--only-parse" in ptlist[0]:
+        __run__=False
+        b_account.getAll(debug=True)
+
     while(__run__):
         d = b_account.getActual()
-        u_notify.show("My bank account", "%d CZK" % d)
-        # temporary value for testing
+        if d:
+            msg = d["message"].decode(encoding="cp1250")
+            #u_notify.show("My bank account", "%.2f CZK" % (d["value"]))
+            u_notify.show("My bank account", "%s" % (msg))
+
         __run__ = False
 
