@@ -9,6 +9,7 @@ try:
     import pygtk
     import os
     import sys
+    import time
     import pynotify
     import imaplib
     import ConfigParser
@@ -98,11 +99,13 @@ class BankAccountEmail():
     def getList(self):
         print self.conn
         typ, data = self.conn.list()
-
-        print typ
-        for it in data:
-            print it 
-        #TODO check if mark exists
+        if typ == "OK":
+            print("DEBUG: Data load ok") 
+            for it in data:
+                print it 
+            #TODO check if mark exists
+        else: 
+            print("ERROR: Data didn't load") 
 
     def getParseEmail(self, raw_data):
         def parse(raw_data):
@@ -122,7 +125,7 @@ class BankAccountEmail():
             return parse(email_message_instance.get_payload())
 
     def getActual(self):
-        self.getList()
+        #self.getList()
 
         self.conn.select(self.mark)
         #result, data = self.conn.uid('search', None, "ALL")
@@ -172,7 +175,7 @@ class NotifierUnity():
 
 if __name__ == "__main__":
 
-    ptlist, args = getopt.getopt(sys.argv[1:], 'd', ["only-parse",])
+    ptlist, args = getopt.getopt(sys.argv[1:], 'd', ["only-parse", "run"])
 
     __run__ = True
     b_account = BankAccountEmail()
@@ -191,5 +194,8 @@ if __name__ == "__main__":
             #u_notify.show("My bank account", "%.2f CZK" % (d["value"]))
             u_notify.show("My bank account", "%s" % (msg))
 
-        __run__ = False
+        if ptlist != [] and "--run" in ptlist[0]:
+            time.sleep(60)
+        else:
+            __run__ = False
 
