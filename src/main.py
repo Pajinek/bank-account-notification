@@ -110,19 +110,20 @@ class BankAccountEmail():
     def getParseEmail(self, raw_data):
         def parse(raw_data):
             msg = raw_data.split("\n")[0]
-            print msg
             m = re.search(" ([0-9, ]*) CZK", msg)
             value = m.group(1).replace(",",".").replace(" ","")
             return {"message": msg, "value": float(value) }
 
         email_message = email.message_from_string(raw_data[0][1])
+        data = {"id": email_message["subject"] }
         maintype = email_message.get_content_maintype()
         if maintype == 'multipart':
             for part in email_message.get_payload():
                 if part.get_content_maintype() == 'text':
-                    return parse(part.get_payload(decode=True))
+                    data.update( parse(part.get_payload(decode=True)))
         elif maintype == 'text':
-            return parse(email_message_instance.get_payload())
+            data.update( parse(email_message_instance.get_payload()) )
+        return data
 
     def getActual(self):
         #self.getList()
@@ -139,7 +140,7 @@ class BankAccountEmail():
         msg_list = []
         self.conn.select(self.mark)
         result, data = self.conn.uid('search', None, '(HEADER from "info@kb.cz")')
-        for email_uid in data[0].split():
+        for email_uid in reversed(data[0].split()):
             result, raw_email = self.conn.uid('fetch', int(email_uid), '(RFC822)')
             try:
                 msg_list += self.getParseEmail(raw_email)
