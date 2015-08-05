@@ -1,0 +1,1 @@
+Notificationn for KB account from your email
